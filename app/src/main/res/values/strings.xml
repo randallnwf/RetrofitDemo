@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RetrofitDemo</string>
+    <string name="search">Search Github</string>
+    <string name="total">Total: %d</string>
+</resources>
