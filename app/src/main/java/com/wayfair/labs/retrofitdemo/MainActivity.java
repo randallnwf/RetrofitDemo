@@ -2,7 +2,6 @@ package com.wayfair.labs.retrofitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -19,6 +18,8 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
+
+    private GitHubService service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,20 +41,24 @@ public class MainActivity extends AppCompatActivity {
                 .addCallAdapterFactory(rx2Adapter)
                 .build();
 
-        GitHubService service = retrofit.create(GitHubService.class);
+        service = retrofit.create(GitHubService.class);
 
-        ((EditText) findViewById(R.id.query)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                Disposable disposable = service.searchRepos(textView.getEditableText().toString())
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(response -> ((TextView) findViewById(R.id.textView)).setText(getString(R.string.total, response.total)),
-                                throwable -> ((TextView) findViewById(R.id.textView)).setText(throwable.getLocalizedMessage())
-                        );
-
-                return true;
-            }
+        ((EditText) findViewById(R.id.query)).setOnEditorActionListener((textView, i, keyEvent) -> {
+            search(textView.getEditableText().toString());
+            return true;
         });
+
+        findViewById(R.id.searchButton).setOnClickListener(v -> {
+            search(((EditText) findViewById(R.id.query)).getEditableText().toString());
+        });
+    }
+
+    private void search(String terms) {
+        Disposable disposable = service.searchRepos(terms)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(response -> ((TextView) findViewById(R.id.results)).setText(getString(R.string.total, response.total)),
+                        throwable -> ((TextView) findViewById(R.id.results)).setText(throwable.getLocalizedMessage())
+                );
     }
 }
